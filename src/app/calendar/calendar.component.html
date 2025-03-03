@@ -1,0 +1,29 @@
+<div class="calendar-container">
+  <mat-toolbar color="primary" class="calendar-toolbar">
+    <button mat-icon-button (click)="previousMonth()" style="cursor: pointer;" aria-label="Previous month">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <span>{{ currentMonth | date: 'MMMM yyyy' }}</span>
+    <button mat-icon-button (click)="nextMonth()" style="cursor: pointer;" aria-label="Next month">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <div class="calendar-grid">
+    <div 
+      class="calendar-day" 
+      *ngFor="let day of daysInMonth" 
+      (click)="selectDate(day)"
+      (keydown)="selectDate(day)"
+      tabindex="0">
+      <div class="calendar-date">
+        {{ day.date | date: 'd' }}
+        <div class="appointment-dot" *ngIf="day.appointmentCount > 0">
+          <span class="appointment-count">{{ day.appointmentCount }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

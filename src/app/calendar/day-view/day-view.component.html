@@ -1,0 +1,40 @@
+<div class="day-view-container">
+  <div class="selected-date-container">
+    <div style="padding: 10px; display: flex; justify-content: center; align-items: center;">
+      <h2>{{ selectedDate | date: 'fullDate' }}</h2>
+      <button mat-button (click)="showHideForm()">Add appointment</button>
+    </div>
+    <button mat-button (click)="goBack()">Go Back</button>
+  </div>
+  
+  <div class="appointment-form" *ngIf="showForm">
+    <form [formGroup]="appointmentForm" (ngSubmit)="addAppointment()">
+      <mat-form-field appearance="fill">
+        <mat-label>Appointment Title</mat-label>
+        <input matInput formControlName="title" placeholder="Enter appointment title" />
+        <mat-error *ngIf="appointmentForm.controls['title'].hasError('required')">Title is required.</mat-error>
+        <mat-error *ngIf="appointmentForm.controls['title'].hasError('minlength')">Title must be at least 3 characters.</mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Time</mat-label>
+        <input matInput formControlName="time" placeholder="Enter time (hh:mm)" />
+        <mat-error *ngIf="appointmentForm.controls['time'].hasError('required')">Time is required.</mat-error>
+      </mat-form-field>
+  
+      <button mat-raised-button color="primary" type="submit" [disabled]="appointmentForm.invalid">
+        Add Appointment
+      </button>
+    </form>
+  </div>
+  
+  <div class="appointments-list">
+    <div *ngFor="let appointment of appointments" class="appointment">
+      <span>{{ appointment.date | date: 'shortTime' }} - {{ appointment.title }}</span>
+      <button mat-button (click)="deleteAppointment(appointment.id)">
+        X
+      </button>
+    </div>
+  </div>
+
+</div>
