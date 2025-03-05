@@ -1,5 +1,54 @@
 .selected-date-container {
+  align-items: center;
   display: flex;
   justify-content: space-between;
+}
+
+.todays-date {
   align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
+.hour {
+  border-top: 1px solid black;
+  cursor: pointer;
+  height: 120px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  padding: 10px;
+}
+
+
+.hour:hover {
+  background-color: #f0f0f0;
+  color:black;
+}
+
+.booked {
+  color: white;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  width: max-content;
+  padding: 10px;
+}
+
+.appointment {
+  max-width: 300px;
+  padding: 10px;
+  background-color: #2196F3;
+}
+
+.appointment-info {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.appointment-title {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
 }

@@ -1,0 +1,40 @@
+
+<h2 mat-dialog-title>{{ data.id ? 'Update' : 'Create New'}} Appointment</h2>
+<mat-dialog-content class="mat-typography" >
+  <div >
+    <form class="appointment-form" [formGroup]="appointmentForm" (ngSubmit)="addAppointment()" (keydown.enter)="addAppointment()">
+        <mat-form-field appearance="fill"  style="width: 250px;">
+          <mat-label>Appointment Title</mat-label>
+          <input matInput formControlName="title" placeholder="Enter appointment title" />
+          <mat-error *ngIf="appointmentForm.controls['title'].hasError('required')">
+            Title is required.
+          </mat-error>
+          <mat-error *ngIf="appointmentForm.controls['title'].hasError('minlength')">
+            Title must be at least 3 characters.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill"  style="width: 250px;">
+          <mat-label>Start Time</mat-label>
+          <input matInput formControlName="startTime" placeholder="Enter start time (hh:mm)" />
+          <mat-error *ngIf="appointmentForm.controls['startTime'].hasError('required')">Start time is required.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill"  style="width: 250px;">
+          <mat-label>End Time</mat-label>
+          <input matInput formControlName="endTime" placeholder="Enter end time (hh:mm)" />
+          <mat-error *ngIf="appointmentForm.controls['endTime'].hasError('required')">End time is required.</mat-error>
+        </mat-form-field>
+    </form>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button
+  (click)="data.id ? updateAppointment(): addAppointment()"
+  mat-button
+  [mat-dialog-close]="true"
+  [disabled]="appointmentForm.invalid"
+  (keydown.enter)="data.id ? updateAppointment(): addAppointment()">
+  {{ data.id ? 'Update' : 'Create'}}
+</button>
+</mat-dialog-actions>

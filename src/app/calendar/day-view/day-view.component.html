@@ -1,40 +1,42 @@
 <div class="day-view-container">
   <div class="selected-date-container">
-    <div style="padding: 10px; display: flex; justify-content: center; align-items: center;">
+    <div class="todays-date">
       <h2>{{ selectedDate | date: 'fullDate' }}</h2>
-      <button mat-button (click)="showHideForm()">Add appointment</button>
+      <button mat-button (click)="openDialog(null,0)">Add appointment</button>
     </div>
     <button mat-button (click)="goBack()">Go Back</button>
   </div>
-  
-  <div class="appointment-form" *ngIf="showForm">
-    <form [formGroup]="appointmentForm" (ngSubmit)="addAppointment()">
-      <mat-form-field appearance="fill">
-        <mat-label>Appointment Title</mat-label>
-        <input matInput formControlName="title" placeholder="Enter appointment title" />
-        <mat-error *ngIf="appointmentForm.controls['title'].hasError('required')">Title is required.</mat-error>
-        <mat-error *ngIf="appointmentForm.controls['title'].hasError('minlength')">Title must be at least 3 characters.</mat-error>
-      </mat-form-field>
-  
-      <mat-form-field appearance="fill">
-        <mat-label>Time</mat-label>
-        <input matInput formControlName="time" placeholder="Enter time (hh:mm)" />
-        <mat-error *ngIf="appointmentForm.controls['time'].hasError('required')">Time is required.</mat-error>
-      </mat-form-field>
-  
-      <button mat-raised-button color="primary" type="submit" [disabled]="appointmentForm.invalid">
-        Add Appointment
-      </button>
-    </form>
-  </div>
-  
-  <div class="appointments-list">
-    <div *ngFor="let appointment of appointments" class="appointment">
-      <span>{{ appointment.date | date: 'shortTime' }} - {{ appointment.title }}</span>
-      <button mat-button (click)="deleteAppointment(appointment.id)">
-        X
-      </button>
+  <div *ngFor="let hour of hours">
+    <div
+      class="hour"
+      (click)="openDialog(null, hour)"
+      (keydown.enter)="openDialog(null, hour)"
+      tabindex="0"
+    >
+      <span>{{ hour < 10 ? '0' + hour : hour }}:00</span>
+      <div
+        class="appointment-info"
+        *ngIf="appointmentsByHour[hour]"
+        [ngClass]="{'booked': appointmentsByHour[hour]}"
+      >
+          <div
+            class="appointment"
+            *ngFor="let appointment of appointmentsByHour[hour]"
+            (click)="openDialog(appointment, hour); $event.stopPropagation()"
+            (keydown.enter)="openDialog(appointment, hour); $event.stopPropagation()"
+            tabindex="0"
+          >
+            <div class="appointment-title">
+              <strong>{{ appointment.title }}</strong>
+              <button
+                (click)="deleteAppointment(appointment.id); $event.stopPropagation()"
+                (keydown.enter)="deleteAppointment(appointment.id); $event.stopPropagation()"
+              >Delete</button>
+            </div>
+            <br>
+            <span>{{ appointment.startTime | date: 'shortTime' }} - {{ appointment.endTime | date: 'shortTime' }}</span>
+          </div>
+      </div>
     </div>
   </div>
-
 </div>

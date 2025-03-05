@@ -4,10 +4,18 @@
   padding: 10px;
 }
 
+.calendar-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 0.5fr);
-  grid-gap: 10px;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(120px, auto);
+  gap: 10px;
   padding: 20px;
 }
 
@@ -15,10 +23,17 @@
   border: 1px solid #ccc;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: start;
+  align-items: start;
   padding: 10px;
   position: relative;
   cursor: pointer;
+  background-color: #f9f9f9;
+  transition: background 0.3s;
+}
+
+.calendar-day:hover {
+  background-color: #e3f2fd;
 }
 
 .calendar-date {
@@ -26,36 +41,33 @@
   font-weight: bold;
 }
 
-.appointment-dot {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background-color: red;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.appointment-count {
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.appointments {
+.appointments-container {
+  width: 230px;
   margin-top: 5px;
-}
-
-.appointment {
-  font-size: 14px;
-}
-
-.calendar-toolbar {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 10px;
+  max-height: 80%;
+  overflow-y: auto;
+}
+
+.appointment-item {
+  background: #1976d2;
+  color: white;
+  padding: 5px;
+  margin: 2px 0;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 4px;
+  width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: transform 0.2s ease-in-out;
+}
+
+.appointment-item:hover {
+  transform: scale(1.05);
+  cursor: grab;
+  background: #1565c0;
 }

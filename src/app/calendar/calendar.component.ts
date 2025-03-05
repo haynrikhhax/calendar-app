@@ -1,81 +1,101 @@
-import { Component, OnInit } from '@angular/core';
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { Appointment } from '../shared/interfaces/calendar-interface';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterModule } from '@angular/router';
 import { MatDialogModule } from '@angular/material/dialog';
-import { AppointmentService } from '../shared/services/appointment.service';
+import { AppointmentDialogService } from '../shared/services/appointment-dialog.service';
+import { MatButtonModule } from '@angular/material/button';
+import { CalendarService } from '../shared/services/calendar.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-calendar',
-  imports: [CommonModule, DatePipe, DragDropModule, MatIconModule, MatToolbarModule, MatDialogModule, RouterModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    DatePipe,
+    DragDropModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatDialogModule,
+    RouterModule,
+    MatButtonModule
+  ],
   templateUrl: './calendar.component.html',
   styleUrls: ['./calendar.component.css'],
 })
-export class CalendarComponent implements OnInit {
+export class CalendarComponent implements OnInit, OnDestroy {
   currentMonth: Date = new Date();
-  daysInMonth: { date: Date; appointments: Appointment[]; appointmentCount: number }[] = [];
+  daysInMonth: { date: Date; appointments: Appointment[] }[] = [];
   selectedDate: Date | null = null;
   appointments: Appointment[] = [];
+  private destroy$ = new Subject<void>();
 
-  constructor(private router: Router, private appointmentService: AppointmentService) { }
+  constructor(
+    private router: Router,
+    private appointmentDialogService: AppointmentDialogService,
+    private calendarService: CalendarService
+  ) { }
 
   ngOnInit() {
-    this.generateMonthDays();
     this.fetchAppointments();
   }
 
-  generateMonthDays() {
-    const lastDayOfMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 0);
-    const totalDaysInMonth = lastDayOfMonth.getDate();
-    const days: { date: Date; appointments: Appointment[]; appointmentCount: number }[] = [];
-
-    for (let i = 1; i <= totalDaysInMonth; i++) {
-      const date = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth(), i);
-      const dayAppointments = this.appointments.filter(appointment => {
-        const appointmentDate = new Date(appointment.date);
-        return appointmentDate.toDateString() === date.toDateString();
-      });
-
-      days.push({
-        date: date,
-        appointments: dayAppointments,
-        appointmentCount: dayAppointments.length,
-      });
-    }
-    this.daysInMonth = days;
-  }
-
   fetchAppointments() {
-    this.appointments = this.appointmentService.getAppointmentsForMonth(this.currentMonth);
-    this.generateMonthDays();
+    this.appointmentDialogService.getAppointmentsForMonth(this.currentMonth)
+      .pipe(
+        takeUntil(this.destroy$),
+      )
+      .subscribe(appointments => {
+        this.appointments = appointments;
+        this.calendarService.generateMonthDays(this.currentMonth, appointments);
+      });
+
+    this.calendarService.daysInMonth$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(days => {
+        this.daysInMonth = days;
+      });
   }
 
   selectDate(day: { date: Date }) {
-    const formattedDate = this.formatDate(day.date);
+    const formattedDate = this.calendarService.formatDate(day.date);
     this.router.navigate([`/calendar/${formattedDate}`]);
   }
 
-  formatDate(date: Date): string {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${month}-${day}-${year}`;
-  }
-
   previousMonth() {
-    const prevMonth = new Date(this.currentMonth);
-    prevMonth.setMonth(this.currentMonth.getMonth() - 1);
-    this.currentMonth = prevMonth;
+    this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() - 1, 1);
     this.fetchAppointments();
   }
 
   nextMonth() {
-    const nextMonth = new Date(this.currentMonth);
-    nextMonth.setMonth(this.currentMonth.getMonth() + 1);
-    this.currentMonth = nextMonth;
+    this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 1);
     this.fetchAppointments();
+  }
+
+  dropAppointment(event: CdkDragDrop<{ appointments: Appointment[]; date: Date }>) {
+    if (event.previousContainer === event.container) {
+      return;
+    }
+
+    const targetDay = event.container.data;
+    const appointment: Appointment = event.item.data;
+
+    if (this.calendarService.hasTimeOverlap(appointment, targetDay.appointments)) {
+      alert("Cannot move appointment: Time slot is already occupied!");
+      return;
+    }
+
+    this.appointmentDialogService.updateAppointmentDate(appointment.id, targetDay.date);
+    this.fetchAppointments();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
